@@ -1,0 +1,58 @@
+
+#include <SPI.h>
+#include <WiFi.h>
+#include <UbidotsArduino.h>
+
+#define pin1 13
+
+#define TOKEN  "BBFF-Ifk9wAiEvuOm8pHsyfNYEaoiWXqjoQ"
+#define SERVER "industrial.api.ubidots.com"
+#define ID "led"
+
+char ssid[] = "INFINITUM880F_2.4";    // your network SSID (name)
+char pass[] = "6e3GhLhHux"; // your network password
+int keyIndex = 0;               // your network key Index number (needed only for WEP)
+
+int status = WL_IDLE_STATUS;
+
+Ubidots client(TOKEN);
+
+void setup(){
+    Serial.begin(9600);
+    while (!Serial) {
+        ; // wait for serial port to connect. Needed for native USB port only
+    }
+
+    // check for the presence of the shield:
+    if (WiFi.status() == WL_NO_SHIELD) {
+        Serial.println("WiFi shield not present");
+        // don't continue:
+        while (true);
+    }
+
+    String fv = WiFi.firmwareVersion();
+    if (fv != "1.1.0") {
+        Serial.println("Please upgrade the firmware");
+    }
+
+    // attempt to connect to Wifi network:
+    while (status != WL_CONNECTED) {
+        Serial.print("Attempting to connect to SSID: ");
+        Serial.println(ssid);
+        // Connect to WPA/WPA2 network. Change this line if using open or WEP network:
+        status = WiFi.begin(ssid, pass);
+
+        // wait 10 seconds for connection:
+        delay(10000);
+    }
+
+}
+void loop(){
+        double temperatura = digitalRead(pin1);
+        bool led =  false;
+
+        (temperatura >= 25)? led = true : led = false;
+        client.add(ID, led);
+        
+        client.sendAll();
+}
